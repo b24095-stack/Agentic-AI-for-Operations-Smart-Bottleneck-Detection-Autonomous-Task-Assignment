@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic AI Operations Manager</title>
+    <style>
+        :root {
+            --bg-dark: #0a0e27;
+            --bg-card: #151932;
+            --bg-card-hover: #1a1f3a;
+            --text-primary: #e4e4e7;
+            --text-secondary: #a1a1aa;
+            --border-color: #27293d;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 2px solid var(--primary);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .pulse-dot {
+            width: 10px;
+            height: 10px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.1); }
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .controls {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card-hover);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: #252a4a;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .capabilities-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .capability-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .capability-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .capability-card h3 {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+        }
+
+        .icon {
+            font-size: 1.5rem;
+        }
+
+        .capability-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .capability-list li {
+            padding: 0.5rem 0;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .capability-list li:before {
+            content: "✓";
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .production-line {
+            background: var(--bg-card-hover);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .production-line:hover {
+            border-color: var(--primary);
+        }
+
+        .line-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .line-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-normal {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .status-warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+
+        .status-critical {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            animation: pulse-border 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-border {
+            0%, 100% { border-color: var(--danger); }
+            50% { border-color: #fca5a5; }
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+
+        .metric {
+            background: var(--bg-dark);
+            padding: 0.75rem;
+            border-radius: 6px;
+        }
+
+        .metric-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--bg-dark);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            transition: all 0.3s ease;
+            border-radius: 3px;
+        }
+
+        .decision-log {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .decision-entry {
+            background: var(--bg-card-hover);
+            border-left: 4px solid var(--primary);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .decision-timestamp {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .decision-event {
+            font-weight: 600;
+            color: var(--danger);
+            margin-bottom: 0.5rem;
+        }
+
+        .decision-analysis {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .decision-action {
+            color: var(--success);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .decision-impact {
+            color: var(--info);
+            font-size: 0.9rem;
+        }
+
+        .tasks-section {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .task-card {
+            background: var(--bg-card-hover);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .task-card:hover {
+            border-color: var(--primary);
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .task-id {
+            font-family: monospace;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .priority {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .priority-high {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        .priority-medium {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        .priority-low {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--info);
+        }
+
+        .task-assignee {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .task-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .task-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+
+        .task-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .status-assigned {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--info);
+        }
+
+        .status-progress {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        .status-completed {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .alerts-section {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .alert-card {
+            background: var(--bg-card-hover);
+            border-left: 4px solid var(--warning);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+        }
+
+        .alert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .alert-type {
+            font-weight: 600;
+            color: var(--warning);
+        }
+
+        .confidence {
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--primary-light);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        .alert-description {
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .alert-action {
+            color: var(--info);
+            font-size: 0.9rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .info-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-toggle {
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .info-content {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .info-content.hidden {
+            display: none;
+        }
+
+        .toast {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--primary);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            animation: slideInRight 0.5s ease, fadeOut 0.5s ease 4.5s forwards;
+            z-index: 1000;
+            max-width: 400px;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+
+        .toast-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .toast-message {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .capabilities-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🤖 Agentic AI Operations Manager</h1>
+        <p>Autonomous Bottleneck Detection &amp; Task Assignment</p>
+        <div class="status-badge">
+            <span class="pulse-dot"></span>
+            <span>AI Agent Active</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Controls -->
+        <div class="controls">
+            <button class="btn btn-primary" id="startBtn" onclick="startSimulation()">▶ Start Simulation</button>
+            <button class="btn btn-secondary" id="pauseBtn" onclick="pauseSimulation()" disabled>⏸ Pause Simulation</button>
+            <button class="btn btn-danger" id="triggerBtn" onclick="triggerBottleneck()">⚠️ Trigger Bottleneck</button>
+            <label style="color: var(--text-secondary); margin-left: 1rem;">Speed: 
+                <input type="range" id="speedControl" min="1" max="5" value="3" style="vertical-align: middle;">
+            </label>
+        </div>
+
+        <!-- How It Works -->
+        <div class="info-panel">
+            <div class="info-toggle" onclick="toggleInfo()">
+                <h3>💡 How It Works</h3>
+                <span id="infoToggleIcon">▼</span>
+            </div>
+            <div class="info-content" id="infoContent">
+                <p><strong>Agentic AI Operations Manager</strong> demonstrates autonomous AI that can analyze, decide, and act without human intervention:</p>
+                <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                    <li><strong>ANALYZE:</strong> Continuously monitors production metrics (throughput, cycle time, queue length, efficiency) across all lines</li>
+                    <li><strong>DECIDE:</strong> Uses intelligent thresholds to detect bottlenecks, classify root causes, and determine optimal responses</li>
+                    <li><strong>ACT:</strong> Automatically creates tasks, assigns them to team members, reallocates resources, and generates predictive alerts</li>
+                </ul>
+                <p style="margin-top: 1rem;">The AI operates autonomously, making decisions in milliseconds and taking actions that would typically require human oversight.</p>
+            </div>
+        </div>
+
+        <!-- Agentic AI Capabilities -->
+        <div class="capabilities-section">
+            <div class="capability-card" style="border-top: 3px solid var(--info);">
+                <h3><span class="icon">📊</span> ANALYZE</h3>
+                <ul class="capability-list">
+                    <li>Real-time throughput monitoring</li>
+                    <li>Cycle time tracking</li>
+                    <li>Queue length analysis</li>
+                    <li>Efficiency pattern recognition</li>
+                    <li>Cross-line comparison</li>
+                </ul>
+            </div>
+
+            <div class="capability-card" style="border-top: 3px solid var(--warning);">
+                <h3><span class="icon">🧠</span> DECIDE</h3>
+                <ul class="capability-list">
+                    <li>Bottleneck classification</li>
+                    <li>Root cause analysis</li>
+                    <li>Impact assessment</li>
+                    <li>Resource optimization</li>
+                    <li>Priority ranking</li>
+                </ul>
+            </div>
+
+            <div class="capability-card" style="border-top: 3px solid var(--success);">
+                <h3><span class="icon">⚡</span> ACT</h3>
+                <ul class="capability-list">
+                    <li>Automatic task creation</li>
+                    <li>Intelligent task assignment</li>
+                    <li>Resource reallocation</li>
+                    <li>Proactive alerting</li>
+                    <li>Performance tracking</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- Production Lines -->
+            <div class="section">
+                <h2><span class="icon">🏭</span> Production Line Monitoring</h2>
+                <div id="productionLines"></div>
+            </div>
+
+            <!-- AI Decision Log -->
+            <div class="section">
+                <h2><span class="icon">🤖</span> AI Decision Log</h2>
+                <div class="decision-log" id="decisionLog">
+                    <p style="color: var(--text-secondary); text-align: center;">Waiting for AI decisions...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Grid -->
+        <div class="main-grid">
+            <!-- Automated Tasks -->
+            <div class="section">
+                <h2><span class="icon">📋</span> Automated Task Assignments</h2>
+                <div class="tasks-section" id="tasksSection">
+                    <p style="color: var(--text-secondary); text-align: center;">No tasks assigned yet...</p>
+                </div>
+            </div>
+
+            <!-- Predictive Alerts -->
+            <div class="section">
+                <h2><span class="icon">🔔</span> Predictive Alerts</h2>
+                <div class="alerts-section" id="alertsSection">
+                    <p style="color: var(--text-secondary); text-align: center;">No alerts at this time...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Performance Metrics -->
+        <h2 style="margin-bottom: 1rem; margin-top: 2rem;"><span class="icon">📈</span> AI Performance Metrics</h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">🎯</div>
+                <div class="stat-value" id="bottlenecksDetected">0</div>
+                <div class="stat-label">Bottlenecks Detected</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-value" id="tasksAssigned">0</div>
+                <div class="stat-label">Tasks Auto-Assigned</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⏱️</div>
+                <div class="stat-value" id="avgResolution">--</div>
+                <div class="stat-label">Avg Resolution Time (min)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-value" id="efficiencyImprovement">0%</div>
+                <div class="stat-label">Efficiency Improvement</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🚫</div>
+                <div class="stat-value" id="interventionsAvoided">0</div>
+                <div class="stat-label">Manual Interventions Avoided</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
